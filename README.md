@@ -11,7 +11,7 @@ Video slicing made simple
 3. Run `bower install`
 4. Run `sudo npm install -g live-server`
 5. Run `live-server`
-6. Click the app directory and you're all set
+6. Click the app directory in the browser window that pops up and you're all set
 
 
 
