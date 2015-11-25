@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en" >
+  <head>
+    <title>Licer</title>
+
+    <meta charset="utf-8">
+    <meta name="description" content="Video slicing made simple">
+    <meta name="viewport" content="initial-scale=1, maximum-scale=1, user-scalable=no" />
+
+    <link rel='stylesheet' href='http://fonts.googleapis.com/css?family=Roboto:400,500,700,400italic'>
+    <link rel="stylesheet" href="./bower_components/angular-material/angular-material.css"/>
+    <link rel="stylesheet" href="./bower_components/ng-material-floating-button/mfb/dist/mfb.css"/>
+    <link rel="stylesheet" href="assets/app.css"/>
+
+    <style type="text/css">
+        /**
+         * Hide when Angular is not yet loaded and initialized
+         */
+        [ng\:cloak], [ng-cloak], [data-ng-cloak], [x-ng-cloak], .ng-cloak, .x-ng-cloak {
+          display: none !important;
+        }
+    </style>
+
+  </head>
+
+  <!-- TO-DO: Pull out all this HTML and the Controller into a route to support multiple pages and decouple view from controller -->
+  <body ng-app="licerApp" layout="row" ng-controller="ClipController" ng-cloak >
+
+  <!-- TO-DO: Make sidebar a directive -->
+  <md-sidenav class="site-sidenav md-sidenav-left md-whiteframe-z2"
+            md-component-id="left"
+            md-is-locked-open="$mdMedia('gt-sm')">
+
+    <md-toolbar class="md-whiteframe-z1">
+      <h1>Video Clips</h1>
+    </md-toolbar>
+
+    <md-list>
+      <md-list-item ng-repeat="clip in clips">
+
+        <!-- TO-DO: Make each clip card a directive -->
+        <md-card flex="100">
+            <div flex layout="column" layout-padding="5px" class="clip" ng-class="{hover: mouseOver}" ng-mouseenter="mouseOver = true"
+            ng-mouseleave="mouseOver = false" ng-click="playClip(clip)">
+                <div flex layout="row" class="clip-header">{{clip.title}}</div>
+                <div flex layout="row">{{formatTime(clip.startTime)}} - {{formatTime(clip.endTime)}}</div>
+            </div>
+
+            <!-- TO-DO: Add the option of removing this actions section altogether for a view-only mode -->
+            <md-card-actions layout="row">
+                <md-button ng-disabled="{{!clip.editable}}" ng-click="editClip(clip)">Edit</md-button>
+                <md-button ng-disabled="{{!clip.deletable}}" ng-click="deleteClip(clip)">Delete</md-button>
+            </md-card-actions>
+        </md-card>
+      </md-list-item>
+    </md-list>
+
+  </md-sidenav>
+
+
+  <!-- TO-DO: Break out this player section as a directive with the option for a view-only mode without the add clip button -->
+  <div flex layout="column" tabIndex="-1" role="main" class="md-whiteframe-z2">
+
+    <md-toolbar layout="row" class="md-whiteframe-z1">
+      <md-button class="menu" hide-gt-sm ng-click="toggleList()" aria-label="Show Clips List">
+        <md-icon md-svg-icon="menu" ></md-icon>
+      </md-button>
+      <h1></h1>
+    </md-toolbar>
+
+    <md-content layout flex id="content" layout="column" layout-wrap layout-align="center center">
+        <div layout-fill layout="row" layout-align="center center">
+            <video id="videoPlayer" controls class="video player"></video>
+        </div>
+
+        <!-- TO-DO: Currently the code for this new clip form is very similar to the below edit clip form. 
+             Change them into a common directive with attributes which would determine the model and save action. -->
+        <div layout="column" layout-align="center start" ng-show="newClip.title != null">
+          <md-input-container flex="100" layout-fill>
+            <label>Name</label>
+            <input ng-model="newClip.title">
+          </md-input-container>
+          <div layout layout-sm="column">
+            <md-input-container flex>
+              <label>Start Time (seconds)</label>
+              <input type="number" ng-model="newClip.startTime">
+            </md-input-container>
+            <md-input-container flex>
+              <label>End Time (seconds)</label>
+              <input type="number" ng-model="newClip.endTime">
+            </md-input-container>
+          </div>
+          <div layout layout-fill layout-padding ="10px">
+            <md-button flex="50" class="md-raised" ng-click="cancel()">Cancel</md-button>
+            <md-button flex="50" class="md-raised md-primary" ng-click="publishClip()">Save Clip</md-button>
+          </div>
+        </div>
+
+        <!-- This is the edit clip form mentioned in the TO-DO above. To be truly flexible and support multiple
+             languages, the form labels could also be defined as constants which could be loaded from a language json file. -->
+        <div layout="column" layout-align="center start" ng-show="edit">
+          <md-input-container flex="100" layout-fill>
+            <label>Name</label>
+            <input ng-model="selectedClip.title">
+          </md-input-container>
+          <div layout layout-sm="column">
+            <md-input-container flex>
+              <label>Start Time (seconds)</label>
+              <input type="number" ng-model="selectedClip.startTime">
+            </md-input-container>
+            <md-input-container flex>
+              <label>End Time (seconds)</label>
+              <input type="number" ng-model="selectedClip.endTime">
+            </md-input-container>
+          </div>
+          <div layout layout-fill layout-padding ="10px">
+            <md-button flex class="md-raised md-primary" ng-click="saveClip()">Done Editing</md-button>
+          </div>
+        </div>
+
+    </md-content>
+
+    <!-- TO-DO: This FAB could be a directive too and take an attribute to determine if it should
+                show or not depending if the user is in edit mode or view-only mode. -->
+    <md-button class="md-fab md-fab-bottom-right" aria-label="Make new clip" ng-click="addClip()">
+        <md-icon md-svg-icon="add" ></md-icon>
+    </md-button>
+
+  </div>
+
+    <script src="./bower_components/angular/angular.js"></script>
+    <script src="./bower_components/angular-animate/angular-animate.js"></script>
+    <script src="./bower_components/angular-aria/angular-aria.js"></script>
+    <script type="text/javascript" src="./bower_components/angular-material/angular-material.js"></script>
+
+    <script src="./src/clips/Clips.js"></script>
+    <script src="./src/clips/ClipController.js"></script>
+    <script src="./src/clips/ClipService.js"></script>
+
+    <script type="text/javascript" src="app.js"></script>
+
+  </body>
+</html>
